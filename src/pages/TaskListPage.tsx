@@ -5,6 +5,8 @@ import { AddTaskForm } from '../components/AddTaskForm'
 import { pickTaskForNotification } from '../lib/tasks'
 import type { Task } from '../types/task'
 import { useSmartNotifications } from '../hooks/useSmartNotifications'
+import { CompletionInsights } from '../components/CompletionInsights'
+import { useCompletionHistory } from '../hooks/useCompletionHistory'
 
 const tabs = [
   { id: 'active', label: 'Active Tasks' },
@@ -35,6 +37,7 @@ export default function TaskListPage() {
     enableNotifications,
     disableNotifications
   } = useSmartNotifications(active)
+  const completionHistory = useCompletionHistory(user?.id)
 
   const handleToggle = async (task: Task) => {
     setActionError(null)
@@ -79,6 +82,8 @@ export default function TaskListPage() {
           <p className="muted">No repeatable tasks to notify today.</p>
         )}
       </section>
+
+      <CompletionInsights {...completionHistory} />
 
       <section className="notification-settings">
         <p className="eyebrow">Browser notifications</p>

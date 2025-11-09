@@ -17,3 +17,13 @@ export type TaskInput = {
   repeat?: string | null
   priority?: number | null
 }
+
+export type TaskCompletion = {
+  id: string
+  task_id: string
+  user_id: string
+  completed_at: string
+  tasks?: {
+    title: string | null
+  } | null
+}
