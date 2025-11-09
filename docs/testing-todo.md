@@ -11,7 +11,7 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 - Fake the `Notification` API and timers to verify requestPermission, enable/pause, and interval scheduling.
 - Confirm that it calls `pickTaskForNotification` with the freshest task list.
 
-### [ ] #t3 Component tests for `CompletionInsights`
+### [x] #t3 Component tests for `CompletionInsights`
 - Snapshot/core assertions for streak/summary cards given mock props.
 - Validate bar chart renders 14 points and recent log truncates to five entries.
 

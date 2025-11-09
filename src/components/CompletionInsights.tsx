@@ -5,7 +5,7 @@ type DailyCount = {
   count: number
 }
 
-type CompletionInsightsProps = {
+export type CompletionInsightsProps = {
   loading: boolean
   error: string | null
   streak: { current: number; best: number }
@@ -48,7 +48,7 @@ export function CompletionInsights({
 
       <div className="insight-chart">
         <p className="eyebrow">Daily completions · last {dailySeries.length} days</p>
-        <div className="bar-chart">
+        <div className="bar-chart" role="presentation">
           {dailySeries.map((day) => (
             <div key={day.date} className="bar">
               <div className="bar-fill" style={{ height: `${(day.count / maxCount) * 100 || 0}%` }} />
