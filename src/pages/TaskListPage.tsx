@@ -4,6 +4,7 @@ import { useTasks } from '../hooks/useTasks'
 import { AddTaskForm } from '../components/AddTaskForm'
 import { pickTaskForNotification } from '../lib/tasks'
 import type { Task } from '../types/task'
+import { useSmartNotifications } from '../hooks/useSmartNotifications'
 
 const tabs = [
   { id: 'active', label: 'Active Tasks' },
@@ -27,6 +28,13 @@ export default function TaskListPage() {
   }, [tab, active, completed, archived])
 
   const suggestedTask = useMemo(() => pickTaskForNotification(active), [active])
+  const {
+    supported: notificationsSupported,
+    status: notificationStatus,
+    permission: notificationPermission,
+    enableNotifications,
+    disableNotifications
+  } = useSmartNotifications(active)
 
   const handleToggle = async (task: Task) => {
     setActionError(null)
@@ -69,6 +77,29 @@ export default function TaskListPage() {
           </>
         ) : (
           <p className="muted">No repeatable tasks to notify today.</p>
+        )}
+      </section>
+
+      <section className="notification-settings">
+        <p className="eyebrow">Browser notifications</p>
+        {!notificationsSupported ? (
+          <p className="muted">Notifications are not supported in this browser.</p>
+        ) : (
+          <>
+            <p className="muted">
+              Status: {notificationStatus === 'active' ? 'Enabled' : notificationStatus}
+              {notificationStatus === 'denied' ? ' · Allow notifications in your browser settings.' : ''}
+            </p>
+            {notificationStatus === 'active' ? (
+              <button className="secondary" onClick={disableNotifications}>
+                Pause reminders
+              </button>
+            ) : (
+              <button onClick={enableNotifications}>
+                {notificationPermission === 'granted' ? 'Start reminders' : 'Enable notifications'}
+              </button>
+            )}
+          </>
         )}
       </section>
 
