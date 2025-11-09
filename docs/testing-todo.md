@@ -19,7 +19,7 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 - Use React Testing Library to submit a title, change repeat/due date/priority, and ensure `onSubmit` payload matches expectations.
 - Cover validation edge cases (empty title, custom repeat).
 
-### [ ] #t5 Auth UI flow (`AuthPage`)
+### [x] #t5 Auth UI flow (`AuthPage`)
 - Simulate login/register clicks, propagate mock `useAuth` context handlers, and assert loading/disabled states + error rendering.
 
 ### [ ] #t6 Task list integration (`TaskListPage`)
