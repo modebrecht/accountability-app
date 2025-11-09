@@ -25,7 +25,7 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 ### [x] #t6 Task list integration (`TaskListPage`)
 - Mock `useTasks`, `useCompletionHistory`, and `useSmartNotifications` to ensure tabs/filtering, completion toggles, and notification controls render consistently.
 
-### [ ] #t7 Edge function logic
+### [x] #t7 Edge function logic
 - Extract `pickTaskForNotification` helpers (or import from shared file) into a Deno test that mocks Supabase responses, ensuring weighting honors completion counts server-side.
 
 ### [ ] #t8 Lint/test automation
