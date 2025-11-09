@@ -31,5 +31,5 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 ### [x] #t8 Lint/test automation
 - Add CI job (GitHub Action or Supabase pipeline) that runs `npm run lint` and `npm run test` to prevent regressions from landing untested.
 
-### [ ] #t9 Coverage tracking
+### [x] #t9 Coverage tracking
 - Configure Vitest `coverage: true` with thresholds so we can measure progress as we add the suites above.
