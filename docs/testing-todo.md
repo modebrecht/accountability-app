@@ -15,7 +15,7 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 - Snapshot/core assertions for streak/summary cards given mock props.
 - Validate bar chart renders 14 points and recent log truncates to five entries.
 
-### [ ] #t4 Form interaction tests (`AddTaskForm`)
+### [x] #t4 Form interaction tests (`AddTaskForm`)
 - Use React Testing Library to submit a title, change repeat/due date/priority, and ensure `onSubmit` payload matches expectations.
 - Cover validation edge cases (empty title, custom repeat).
 
