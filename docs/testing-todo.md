@@ -22,7 +22,7 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 ### [x] #t5 Auth UI flow (`AuthPage`)
 - Simulate login/register clicks, propagate mock `useAuth` context handlers, and assert loading/disabled states + error rendering.
 
-### [ ] #t6 Task list integration (`TaskListPage`)
+### [x] #t6 Task list integration (`TaskListPage`)
 - Mock `useTasks`, `useCompletionHistory`, and `useSmartNotifications` to ensure tabs/filtering, completion toggles, and notification controls render consistently.
 
 ### [ ] #t7 Edge function logic
