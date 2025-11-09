@@ -28,7 +28,7 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 ### [x] #t7 Edge function logic
 - Extract `pickTaskForNotification` helpers (or import from shared file) into a Deno test that mocks Supabase responses, ensuring weighting honors completion counts server-side.
 
-### [ ] #t8 Lint/test automation
+### [x] #t8 Lint/test automation
 - Add CI job (GitHub Action or Supabase pipeline) that runs `npm run lint` and `npm run test` to prevent regressions from landing untested.
 
 ### [ ] #t9 Coverage tracking
