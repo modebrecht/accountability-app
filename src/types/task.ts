@@ -8,6 +8,7 @@ export type Task = {
   due_date: string | null
   repeat: string | null
   priority: number | null
+  recentCompletions?: number
 }
 
 export type TaskInput = {

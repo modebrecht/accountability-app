@@ -3,6 +3,9 @@ import type { Task, TaskInput } from '../types/task'
 import { supabase } from '../supabaseClient'
 import { splitTasks } from '../lib/tasks'
 
+const MS_PER_DAY = 1000 * 60 * 60 * 24
+const RECENT_WINDOW_DAYS = 30
+
 export function useTasks(userId?: string) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
@@ -19,10 +22,45 @@ export function useTasks(userId?: string) {
 
     if (queryError) {
       setError(queryError.message)
-    } else {
-      setTasks(data ?? [])
+      setLoading(false)
+      return
     }
 
+    const taskData = (data ?? []) as Task[]
+
+    if (!taskData.length) {
+      setTasks([])
+      setLoading(false)
+      return
+    }
+
+    const thirtyDaysAgo = new Date(Date.now() - RECENT_WINDOW_DAYS * MS_PER_DAY).toISOString()
+    const { data: completionRows, error: completionsError } = await supabase
+      .from('task_completions')
+      .select('task_id, completed_at')
+      .in(
+        'task_id',
+        taskData.map((task) => task.id)
+      )
+      .eq('user_id', userId)
+      .gte('completed_at', thirtyDaysAgo)
+
+    if (completionsError) {
+      setError(completionsError.message)
+    }
+
+    const completionCounts = new Map<string, number>()
+    completionRows?.forEach((row) => {
+      const current = completionCounts.get(row.task_id) ?? 0
+      completionCounts.set(row.task_id, current + 1)
+    })
+
+    const enrichedTasks = taskData.map((task) => ({
+      ...task,
+      recentCompletions: completionCounts.get(task.id) ?? 0
+    }))
+
+    setTasks(enrichedTasks)
     setLoading(false)
   }, [userId])
 
@@ -75,8 +113,32 @@ export function useTasks(userId?: string) {
 
     if (updateError) throw updateError
 
-    setTasks((prev) => prev.map((current) => (current.id === task.id ? (data as Task) : current)))
-    return data as Task
+    if (!task.completed) {
+      const { error: insertError } = await supabase.from('task_completions').insert({
+        task_id: task.id,
+        user_id: task.user_id,
+        completed_at: updates.completed_at
+      })
+      if (insertError) throw insertError
+    } else {
+      const { error: deleteError } = await supabase
+        .from('task_completions')
+        .delete()
+        .eq('task_id', task.id)
+        .order('completed_at', { ascending: false })
+        .limit(1)
+      if (deleteError) throw deleteError
+    }
+
+    const updatedTask: Task = {
+      ...(data as Task),
+      recentCompletions: !task.completed
+        ? (task.recentCompletions ?? 0) + 1
+        : Math.max(0, (task.recentCompletions ?? 0) - 1)
+    }
+
+    setTasks((prev) => prev.map((current) => (current.id === task.id ? updatedTask : current)))
+    return updatedTask
   }, [])
 
   const categorized = useMemo(() => splitTasks(tasks), [tasks])

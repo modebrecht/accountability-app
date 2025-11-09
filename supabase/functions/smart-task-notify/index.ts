@@ -22,6 +22,7 @@ type Task = {
   completed_at: string | null
   priority: number | null
   created_at: string
+  recent_completions?: number
 }
 
 type Payload = {
@@ -64,8 +65,30 @@ serve(async (req) => {
       })
     }
 
+    const thirtyDaysAgo = new Date(Date.now() - 30 * MS_PER_DAY).toISOString()
+    const { data: completions, error: completionsError } = await supabase
+      .from('task_completions')
+      .select('task_id, completed_at')
+      .eq('user_id', payload.user_id)
+      .gte('completed_at', thirtyDaysAgo)
+
+    if (completionsError) {
+      throw completionsError
+    }
+
+    const completionCounts = new Map<string, number>()
+    completions?.forEach((row) => {
+      const current = completionCounts.get(row.task_id) ?? 0
+      completionCounts.set(row.task_id, current + 1)
+    })
+
+    const enrichedTasks = (tasks as Task[]).map((task) => ({
+      ...task,
+      recent_completions: completionCounts.get(task.id) ?? 0
+    }))
+
     const today = new Date()
-    const chosen = pickTaskForNotification(tasks as Task[], today)
+    const chosen = pickTaskForNotification(enrichedTasks, today)
 
     return new Response(JSON.stringify({ task: chosen }), {
       status: 200,
@@ -117,7 +140,7 @@ function pickTaskForNotification(tasks: Task[], today: Date) {
   if (!candidates.length) return null
 
   const weighted = candidates.map((task) => {
-    const recentCompletions = task.completed_at && daysBetween(task.completed_at, today) <= 30 ? 1 : 0
+    const recentCompletions = task.recent_completions ?? 0
     const weight = (1 / (1 + recentCompletions)) * (task.priority ?? 1)
     return { task, weight }
   })

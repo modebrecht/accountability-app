@@ -69,7 +69,7 @@ export function pickTaskForNotification(tasks: Task[], today = new Date()) {
   if (!candidates.length) return null
 
   const weighted = candidates.map((task) => {
-    const recentCompletions = task.completed_at && daysBetween(task.completed_at, today) <= 30 ? 1 : 0
+    const recentCompletions = task.recentCompletions ?? 0
     const weight = (1 / (1 + recentCompletions)) * (task.priority ?? 1)
     return { task, weight }
   })
