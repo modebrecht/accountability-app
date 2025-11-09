@@ -11,17 +11,17 @@ type DailyCount = {
   count: number
 }
 
-function toDayKey(date: Date) {
+export function toDayKey(date: Date) {
   return date.toISOString().slice(0, 10)
 }
 
-function differenceInDays(a: string, b: string) {
+export function differenceInDays(a: string, b: string) {
   const dateA = new Date(`${a}T00:00:00Z`)
   const dateB = new Date(`${b}T00:00:00Z`)
   return Math.round((dateA.getTime() - dateB.getTime()) / MS_PER_DAY)
 }
 
-function computeCurrentStreak(daySet: Set<string>) {
+export function computeCurrentStreak(daySet: Set<string>) {
   let streak = 0
   const cursor = new Date()
   let currentDay = toDayKey(cursor)
@@ -35,7 +35,7 @@ function computeCurrentStreak(daySet: Set<string>) {
   return streak
 }
 
-function computeBestStreak(daySet: Set<string>) {
+export function computeBestStreak(daySet: Set<string>) {
   if (!daySet.size) return 0
   const sortedDays = Array.from(daySet).sort()
   let best = 1
