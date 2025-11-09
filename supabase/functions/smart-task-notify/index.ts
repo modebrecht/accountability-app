@@ -66,10 +66,12 @@ serve(async (req) => {
     }
 
     const thirtyDaysAgo = new Date(Date.now() - 30 * MS_PER_DAY).toISOString()
+    const taskIds = (tasks as Task[]).map((task) => task.id)
     const { data: completions, error: completionsError } = await supabase
       .from('task_completions')
       .select('task_id, completed_at')
       .eq('user_id', payload.user_id)
+      .in('task_id', taskIds)
       .gte('completed_at', thirtyDaysAgo)
 
     if (completionsError) {

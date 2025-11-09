@@ -92,8 +92,9 @@ export function useTasks(userId?: string) {
 
       if (insertError) throw insertError
 
-      setTasks((prev) => (data ? [data, ...prev] : prev))
-      return data
+      const enriched = data ? { ...(data as Task), recentCompletions: 0 } : null
+      setTasks((prev) => (enriched ? [enriched, ...prev] : prev))
+      return enriched
     },
     [userId]
   )
@@ -125,6 +126,7 @@ export function useTasks(userId?: string) {
         .from('task_completions')
         .delete()
         .eq('task_id', task.id)
+        .eq('user_id', task.user_id)
         .order('completed_at', { ascending: false })
         .limit(1)
       if (deleteError) throw deleteError

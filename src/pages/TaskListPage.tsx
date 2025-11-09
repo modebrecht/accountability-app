@@ -63,7 +63,8 @@ export default function TaskListPage() {
             <h3>{suggestedTask.title}</h3>
             <p className="muted">
               Repeat pattern: {suggestedTask.repeat ?? 'none'} · Priority weight{' '}
-              {(suggestedTask.priority ?? 1).toFixed(1)}
+              {(suggestedTask.priority ?? 1).toFixed(1)} ·{' '}
+              {suggestedTask.recentCompletions ?? 0} hits last 30d
             </p>
           </>
         ) : (
@@ -112,6 +113,8 @@ export default function TaskListPage() {
                 <p className="task-meta">
                   {task.repeat ?? 'no repeat'}
                   {task.due_date ? ` · Due ${task.due_date}` : ''}
+                  {' · '}
+                  {task.recentCompletions ?? 0} hits last 30d
                 </p>
               </div>
             </button>
