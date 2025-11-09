@@ -7,7 +7,7 @@ We currently only cover the pure helpers in `src/lib/tasks.ts` and the derived m
 - Assert loading/error transitions and the enrichment of `recentCompletions`.
 - Cover toggling completion to ensure insert/delete side-effects run exactly once per call.
 
-### [ ] #t2 Exercise `useSmartNotifications`
+### [x] #t2 Exercise `useSmartNotifications`
 - Fake the `Notification` API and timers to verify requestPermission, enable/pause, and interval scheduling.
 - Confirm that it calls `pickTaskForNotification` with the freshest task list.
 
