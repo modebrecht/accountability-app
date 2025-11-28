@@ -274,3 +274,13 @@ button.secondary {
   color: #dc2626;
   font-size: 0.95rem;
 }
+
+.status {
+  margin: 0;
+  color: #15803d;
+  font-size: 0.95rem;
+}
+
+.status-error {
+  color: #dc2626;
+}

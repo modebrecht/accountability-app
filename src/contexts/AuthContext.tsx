@@ -48,23 +48,17 @@ export function AuthProvider({ children }: PropsWithChildren) {
       user: session?.user ?? null,
       loading,
       signIn: async (email: string, password: string) => {
-        setLoading(true)
         const { error, data } = await supabase.auth.signInWithPassword({ email, password })
         setSession(data.session)
-        setLoading(false)
         if (error) throw error
       },
       signUp: async (email: string, password: string) => {
-        setLoading(true)
         const { error, data } = await supabase.auth.signUp({ email, password })
         setSession(data.session)
-        setLoading(false)
         if (error) throw error
       },
       signOut: async () => {
-        setLoading(true)
         const { error } = await supabase.auth.signOut()
-        setLoading(false)
         if (error) throw error
         setSession(null)
       }

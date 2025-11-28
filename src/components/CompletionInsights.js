@@ -1,0 +1,13 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+export function CompletionInsights({ loading, error, streak, last7Count, last30Count, dailySeries, entries }) {
+    const maxCount = Math.max(...dailySeries.map((item) => item.count), 1);
+    const recentEntries = entries.slice(0, 5);
+    return (_jsxs("section", { className: "completion-insights", children: [_jsx("div", { className: "insights-header", children: _jsxs("div", { children: [_jsx("p", { className: "eyebrow", children: "Completion insights" }), _jsx("h3", { children: "Your consistency snapshot" })] }) }), error ? _jsx("p", { className: "error", children: error }) : null, loading ? _jsx("p", { children: "Loading completion history\u2026" }) : null, _jsxs("div", { className: "insight-grid", children: [_jsx(InsightCard, { label: "Current streak", value: `${streak.current} day${streak.current === 1 ? '' : 's'}` }), _jsx(InsightCard, { label: "Best streak", value: `${streak.best} day${streak.best === 1 ? '' : 's'}` }), _jsx(InsightCard, { label: "Last 7 days", value: `${last7Count} completion${last7Count === 1 ? '' : 's'}` }), _jsx(InsightCard, { label: "Last 30 days", value: `${last30Count} completion${last30Count === 1 ? '' : 's'}` })] }), _jsxs("div", { className: "insight-chart", children: [_jsxs("p", { className: "eyebrow", children: ["Daily completions \u00B7 last ", dailySeries.length, " days"] }), _jsx("div", { className: "bar-chart", role: "presentation", children: dailySeries.map((day) => (_jsxs("div", { className: "bar", children: [_jsx("div", { className: "bar-fill", style: { height: `${(day.count / maxCount) * 100 || 0}%` } }), _jsx("span", { className: "bar-label", children: formatDayLabel(day.date) })] }, day.date))) })] }), _jsxs("div", { className: "insight-log", children: [_jsx("p", { className: "eyebrow", children: "Recent completions" }), !recentEntries.length ? (_jsx("p", { className: "muted", children: "No completion history yet." })) : (_jsx("ul", { children: recentEntries.map((entry) => (_jsxs("li", { children: [_jsx("p", { className: "task-title", children: entry.tasks?.title ?? 'Untitled task' }), _jsx("p", { className: "muted", children: new Date(entry.completed_at).toLocaleString() })] }, entry.id))) }))] })] }));
+}
+function InsightCard({ label, value }) {
+    return (_jsxs("article", { className: "insight-card", children: [_jsx("p", { className: "eyebrow", children: label }), _jsx("p", { className: "value", children: value })] }));
+}
+function formatDayLabel(dateString) {
+    const date = new Date(`${dateString}T00:00:00`);
+    return date.toLocaleDateString(undefined, { weekday: 'short' });
+}
