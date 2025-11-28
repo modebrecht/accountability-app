@@ -22,6 +22,11 @@ export default function TaskListPage() {
   const [tab, setTab] = useState<TabId>('active')
   const [showForm, setShowForm] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [view, setView] = useState<'board' | 'insights' | 'settings'>('board')
+  const [randomMode, setRandomMode] = useState(false)
+  const [intervalMinutes, setIntervalMinutes] = useState(15)
+  const [focusHours, setFocusHours] = useState(4)
+  const [nextTaskMessage, setNextTaskMessage] = useState<string | null>(null)
 
   const currentTasks = useMemo(() => {
     if (tab === 'completed') return completed
@@ -36,7 +41,7 @@ export default function TaskListPage() {
     permission: notificationPermission,
     enableNotifications,
     disableNotifications
-  } = useSmartNotifications(active)
+  } = useSmartNotifications(active, { intervalMs: intervalMinutes * 60 * 1000, randomize: randomMode })
   const completionHistory = useCompletionHistory(user?.id)
 
   const handleToggle = async (task: Task) => {
@@ -46,6 +51,22 @@ export default function TaskListPage() {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Unable to update task'
       setActionError(message)
+    }
+  }
+
+  const pickNextTask = () => {
+    const task = randomMode ? active[Math.floor(Math.random() * (active.length || 1))] : pickTaskForNotification(active)
+    if (!task) {
+      setNextTaskMessage('Keine Tasks verfügbar.')
+      return
+    }
+    setNextTaskMessage(`Nächster Task: ${task.title}`)
+    try {
+      if (Notification.permission === 'granted') {
+        new Notification('Nächster Task', { body: task.title })
+      }
+    } catch {
+      // ignore if Notification API not available
     }
   }
 
@@ -65,48 +86,118 @@ export default function TaskListPage() {
         </div>
       </header>
 
+      <div className="view-switch">
+        <button className={view === 'board' ? 'active' : 'secondary'} onClick={() => setView('board')}>
+          Tasks
+        </button>
+        <button className={view === 'insights' ? 'active' : 'secondary'} onClick={() => setView('insights')}>
+          Completion insights
+        </button>
+        <button className={view === 'settings' ? 'active' : 'secondary'} onClick={() => setView('settings')}>
+          Einstellungen
+        </button>
+      </div>
+
       {showForm ? <AddTaskForm onSubmit={createTask} onCancel={() => setShowForm(false)} /> : null}
 
-      <section className="suggestion-card">
-        <p className="eyebrow">Smart reminder</p>
-        {suggestedTask ? (
-          <>
-            <h3>{suggestedTask.title}</h3>
-            <p className="muted">
-              Repeat pattern: {suggestedTask.repeat ?? 'none'} · Priority weight{' '}
-              {(suggestedTask.priority ?? 1).toFixed(1)} ·{' '}
-              {suggestedTask.recentCompletions ?? 0} hits last 30d
-            </p>
-          </>
-        ) : (
-          <p className="muted">No repeatable tasks to notify today.</p>
-        )}
-      </section>
+      {view === 'board' ? (
+        <>
+          <section className="suggestion-card">
+            <div className="suggestion-header">
+              <div>
+                <p className="eyebrow">Priority suggestion</p>
+                {suggestedTask ? (
+                  <>
+                    <h3>{suggestedTask.title}</h3>
+                    <p className="muted">
+                      Wiederholung: {suggestedTask.repeat ?? 'keine'} · Gewicht {(suggestedTask.priority ?? 1).toFixed(1)} ·{' '}
+                      {suggestedTask.recentCompletions ?? 0} Treffer letzte 30 Tage
+                    </p>
+                  </>
+                ) : (
+                  <p className="muted">Keine Vorschläge für heute.</p>
+                )}
+              </div>
+              <div className="suggestion-actions">
+                <button className="secondary" onClick={pickNextTask}>
+                  Nächster Task
+                </button>
+                <button onClick={enableNotifications}>
+                  {notificationPermission === 'granted' ? 'Start & Focus' : 'Benachrichtigen'}
+                </button>
+              </div>
+            </div>
+            {nextTaskMessage ? <p className="status">{nextTaskMessage}</p> : null}
+          </section>
 
-      <CompletionInsights {...completionHistory} />
+          <section className="focus-panel">
+            <div className="focus-row">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={randomMode}
+                  onChange={(event) => setRandomMode(event.target.checked)}
+                />{' '}
+                Zufall (Priorität ignorieren)
+              </label>
+              <div className="badge">
+                Fokus-Fenster: {focusHours}h · Benachrichtigung alle {intervalMinutes} min
+              </div>
+            </div>
+            <div className="focus-controls">
+              <div>
+                <p className="muted">Fokus-Zeitraum (Stunden)</p>
+                <input
+                  type="range"
+                  min={1}
+                  max={8}
+                  step={1}
+                  value={focusHours}
+                  onChange={(event) => setFocusHours(Number(event.target.value))}
+                />
+              </div>
+              <div>
+                <p className="muted">Benachrichtigung alle (Minuten)</p>
+                <input
+                  type="range"
+                  min={5}
+                  max={60}
+                  step={5}
+                  value={intervalMinutes}
+                  onChange={(event) => setIntervalMinutes(Number(event.target.value))}
+                />
+              </div>
+            </div>
+          </section>
+        </>
+      ) : null}
 
-      <section className="notification-settings">
-        <p className="eyebrow">Browser notifications</p>
-        {!notificationsSupported ? (
-          <p className="muted">Notifications are not supported in this browser.</p>
-        ) : (
-          <>
-            <p className="muted">
-              Status: {notificationStatus === 'active' ? 'Enabled' : notificationStatus}
-              {notificationStatus === 'denied' ? ' · Allow notifications in your browser settings.' : ''}
-            </p>
-            {notificationStatus === 'active' ? (
-              <button className="secondary" onClick={disableNotifications}>
-                Pause reminders
-              </button>
-            ) : (
-              <button onClick={enableNotifications}>
-                {notificationPermission === 'granted' ? 'Start reminders' : 'Enable notifications'}
-              </button>
-            )}
-          </>
-        )}
-      </section>
+      {view === 'insights' ? <CompletionInsights {...completionHistory} /> : null}
+
+      {view === 'settings' ? (
+        <section className="notification-settings">
+          <p className="eyebrow">Browser notifications</p>
+          {!notificationsSupported ? (
+            <p className="muted">Notifications are not supported in this browser.</p>
+          ) : (
+            <>
+              <p className="muted">
+                Status: {notificationStatus === 'active' ? 'Enabled' : notificationStatus}
+                {notificationStatus === 'denied' ? ' · Allow notifications in your browser settings.' : ''}
+              </p>
+              {notificationStatus === 'active' ? (
+                <button className="secondary" onClick={disableNotifications}>
+                  Pause reminders
+                </button>
+              ) : (
+                <button onClick={enableNotifications}>
+                  {notificationPermission === 'granted' ? 'Start reminders' : 'Enable notifications'}
+                </button>
+              )}
+            </>
+          )}
+        </section>
+      ) : null}
 
       <nav className="tablist">
         {tabs.map((item) => (

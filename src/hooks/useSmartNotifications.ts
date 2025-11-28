@@ -4,7 +4,20 @@ import { pickTaskForNotification } from '../lib/tasks'
 
 const DEFAULT_INTERVAL_MS = 15 * 60 * 1000
 
-export function useSmartNotifications(tasks: Task[], intervalMs = DEFAULT_INTERVAL_MS) {
+type NotificationOptions = {
+  intervalMs?: number
+  randomize?: boolean
+}
+
+function pickRandomTask(tasks: Task[]) {
+  if (!tasks.length) return null
+  const index = Math.floor(Math.random() * tasks.length)
+  return tasks[index]
+}
+
+export function useSmartNotifications(tasks: Task[], options: NotificationOptions = {}) {
+  const intervalMs = options.intervalMs ?? DEFAULT_INTERVAL_MS
+  const randomize = options.randomize ?? false
   const supportsNotifications = typeof window !== 'undefined' && 'Notification' in window
   const [permission, setPermission] = useState<NotificationPermission>(
     supportsNotifications ? Notification.permission : 'denied'
@@ -28,7 +41,7 @@ export function useSmartNotifications(tasks: Task[], intervalMs = DEFAULT_INTERV
 
   const triggerNotification = useCallback(() => {
     if (!supportsNotifications || permission !== 'granted') return
-    const task = pickTaskForNotification(tasksRef.current)
+    const task = randomize ? pickRandomTask(tasksRef.current) : pickTaskForNotification(tasksRef.current)
     if (!task) return
 
     const bodyParts = [
@@ -36,12 +49,12 @@ export function useSmartNotifications(tasks: Task[], intervalMs = DEFAULT_INTERV
       task.repeat && task.repeat !== 'none' ? `Pattern: ${task.repeat}` : undefined
     ].filter(Boolean)
 
-    new Notification('Accountability reminder', {
+    new Notification(randomize ? 'Zufälliger Task' : 'Accountability reminder', {
       body: bodyParts.join('\n'),
       tag: task.id,
       renotify: false
     })
-  }, [permission, supportsNotifications])
+  }, [permission, supportsNotifications, randomize])
 
   useEffect(() => {
     if (!enabled || permission !== 'granted' || !supportsNotifications) {
